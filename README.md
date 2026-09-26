@@ -1,6 +1,6 @@
 # Teaching an agent loop to account for property work
 
-We run cron and queue infra where a missed job or duplicate delivery pages us at 3am. This example isolates one concrete decision in a small Spring-style Java service: a maintenance request becomes either `READY_FOR_REVIEW` or `NEEDS_ATTENTION`, with tenant docs and inspection reminders riding the same case. Infrai acts as the error ledger behind the loop, and you only need one key to capture failures; a single `INFRAI_API_KEY` covers the capture call so the lesson stays on the business transition instead of a second vendor SDK.
+This example puts one concrete decision in a small Spring-style Java service: a maintenance request becomes either `READY_FOR_REVIEW` or `NEEDS_ATTENTION`, while tenant documents and inspection reminders travel with the same case. Infrai is the error ledger behind the loop; a single `INFRAI_API_KEY` covers the capture call, so the lesson stays on the business transition rather than on a second vendor SDK.
 
 The structural edge is one key for every capability this service may add later, exposed through one small interface.
 
@@ -19,11 +19,11 @@ With `INFRAI_API_KEY` set, a failed step is posted to `POST /v1/errors/capture`;
 
 `MaintenanceRequest`, `TenantDocument`, and `InspectionReminder` are ordinary records, so the agent loop can be tested without a framework container. The decision is deterministic: an urgent request with an attached lease and an overdue inspection is `NEEDS_ATTENTION`; a complete, non-overdue case is `READY_FOR_REVIEW`.
 
-`InfraiClient` keeps the integration narrow. It sends an explicit `POST`, reads the `{ok,data,error,metadata}` envelope before looking at HTTP status, honors `Retry-After` on 429 responses, and supplies a stable client id in the captured context so a retry describes the same case. Idempotency reflex: the API key is read from the process environment, never from source.
+`InfraiClient` keeps the integration narrow. It sends an explicit `POST`, reads the `{ok,data,error,metadata}` envelope before looking at HTTP status, honors `Retry-After` on 429 responses, and supplies a stable client id in the captured context so a retry describes the same case. The API key is read from the process environment, never from source.
 
 ## Focused verification
 
-`PropertyAgentServiceTest` exercises the business decision rather than the HTTP helper, the same way we isolate a cron job from its side effects in a postmortem:
+`PropertyAgentServiceTest` exercises the business decision rather than the HTTP helper:
 
 ```bash
 javac -d out $(find src -name '*.java')
